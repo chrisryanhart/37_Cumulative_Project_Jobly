@@ -5,12 +5,13 @@
 const jsonschema = require("jsonschema");
 const express = require("express");
 
-const { BadRequestError } = require("../expressError");
+const { BadRequestError, ExpressError } = require("../expressError");
 const { ensureLoggedIn } = require("../middleware/auth");
 const Company = require("../models/company");
 
 const companyNewSchema = require("../schemas/companyNew.json");
 const companyUpdateSchema = require("../schemas/companyUpdate.json");
+const companyQuerySchema = require('../schemas/companyQuery.json');
 
 const router = new express.Router();
 
@@ -52,7 +53,25 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
 
 router.get("/", async function (req, res, next) {
   try {
-    const companies = await Company.findAll();
+    // verify number input
+    // if number, then change, otherwise
+    // take 
+
+    const validator = jsonschema.validate(req.query, companyQuerySchema);
+    if (!validator.valid) {
+      const errs = validator.errors.map(e => e.stack);
+      throw new BadRequestError(errs);
+    }
+    const filterCriteria = req.query;
+
+    if (parseInt(req.query.minEmployees) > parseInt(req.query.maxEmployees)){
+      const err = new BadRequestError('Min employees cant be greater than the max');
+      return next(err);
+    }
+
+    // const filterCriteria = Object.keys(req.query).length !== 0 ? req.query : ' ';
+
+    const companies = await Company.findAll(filterCriteria);
     return res.json({ companies });
   } catch (err) {
     return next(err);

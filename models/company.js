@@ -2,7 +2,7 @@
 
 const db = require("../db");
 const { BadRequestError, NotFoundError } = require("../expressError");
-const { sqlForPartialUpdate } = require("../helpers/sql");
+const { sqlForPartialUpdate, sqlForFilteredCompanies } = require("../helpers/sql");
 
 /** Related functions for companies. */
 
@@ -49,13 +49,45 @@ class Company {
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    * */
 
-  static async findAll() {
+  static async findAll(data) {
+
+    if (Object.keys(data).length !== 0){
+      // gets filtered companies
+  
+      const {setCols,values} = sqlForFilteredCompanies(data,{minEmployees:"num_employees",maxEmployees:"num_employees"});
+
+      const criteria = "WHERE " + setCols;
+
+      const filteredQuery = `SELECT handle,
+                                  name,
+                                  description,
+                                  num_employees AS "numEmployees",
+                                  logo_url AS "logoUrl"
+                              FROM companies
+                              ${criteria}
+                              ORDER BY name`;
+      const companiesRes = await db.query(filteredQuery,values);
+
+      return companiesRes.rows;
+    }
+    const querySql = `UPDATE companies 
+                      SET ${setCols} 
+                      WHERE handle = ${handleVarIdx} 
+                      RETURNING handle, 
+                                name, 
+                                description, 
+                                num_employees AS "numEmployees", 
+                                logo_url AS "logoUrl"`;
+    const result = await db.query(querySql, [...values, handle]);
+    // gets all companies
+
     const companiesRes = await db.query(
           `SELECT handle,
                   name,
                   description,
                   num_employees AS "numEmployees",
                   logo_url AS "logoUrl"
+           ${data}
            FROM companies
            ORDER BY name`);
     return companiesRes.rows;

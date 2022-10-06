@@ -29,4 +29,30 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
   };
 }
 
-module.exports = { sqlForPartialUpdate };
+function sqlForFilteredCompanies(dataToUpdate, jsToSql) {
+  // extracts keys from columns where a change is needed
+  const keys = Object.keys(dataToUpdate);
+  console.log(`key length = ${keys}`);
+  if (keys.length === 0) throw new BadRequestError("No data");
+
+  // {firstName: 'Aliya', age: 32} => ['"first_name"=$1', '"age"=$2']
+  const cols = keys.map((colName, idx) => {
+      if(colName === 'minEmployees') {
+        return `"${jsToSql[colName] || colName}">=$${idx + 1}`;
+
+    }else if (colName === 'maxEmployees'){
+      return `"${jsToSql[colName] || colName}"<=$${idx + 1}`;
+
+    }else{
+      return `"${jsToSql[colName] || colName}"=$${idx + 1}`;
+    }
+  });
+
+  // parameterized column values their respective values are returned
+  return {
+    setCols: cols.join(" AND "),
+    values: Object.values(dataToUpdate),
+  };
+}
+
+module.exports = { sqlForPartialUpdate, sqlForFilteredCompanies };
