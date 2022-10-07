@@ -51,20 +51,35 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
  * Authorization required: none
  */
 
+// name like - find syntax
+
+// SELECT * FROM trees WHERE LOWER( trees.title ) LIKE  '%elm%'
+
+// case insensitive - convert to lowercase
+
 router.get("/", async function (req, res, next) {
   try {
-    // verify number input
-    // if number, then change, otherwise
-    // take 
 
-    const validator = jsonschema.validate(req.query, companyQuerySchema);
+    // consolidate request data into an object
+    const filterCriteria = {};
+
+    if(Object.keys(req.query).includes('name')){
+      filterCriteria["name"] = req.query.name.toLowerCase();
+    }
+    if(Object.keys(req.body).length!==0){
+      for(const key in req.body){
+        filterCriteria[key] = req.body[key];
+      }
+    }
+
+    const validator = jsonschema.validate(filterCriteria, companyQuerySchema);
     if (!validator.valid) {
       const errs = validator.errors.map(e => e.stack);
       throw new BadRequestError(errs);
     }
-    const filterCriteria = req.query;
 
-    if (parseInt(req.query.minEmployees) > parseInt(req.query.maxEmployees)){
+    // If min greater than max employees, throw error
+    if (filterCriteria.minEmployees > filterCriteria.maxEmployees){
       const err = new BadRequestError('Min employees cant be greater than the max');
       return next(err);
     }

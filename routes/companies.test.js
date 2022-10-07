@@ -96,6 +96,34 @@ describe("GET /companies", function () {
     });
   });
 
+  test("ensure filter by query string and req.body works", async function () {
+    const resp = await await request(app).get("/companies?name=C1").send({"minEmployees":1});
+    expect(resp.body).toEqual({
+      companies:
+          [
+            {
+              handle: "c1",
+              name: "C1",
+              description: "Desc1",
+              numEmployees: 1,
+              logoUrl: "http://c1.img",
+            }
+          ],
+    });
+  });
+
+  test("error is string passed into min/maxEmployees filter params", async function () {
+    const resp = await await request(app).get("/companies").send({"minEmployees":"a"});
+    expect(resp.body.error.message[0]).toEqual('instance.minEmployees is not of a type(s) integer');
+    expect(resp.error.status).toEqual(400);
+  });
+
+  test("error is string passed into min/maxEmployees filter params", async function () {
+    const resp = await await request(app).get("/companies").send({"minEmployees":101,"maxEmployees":99});
+    expect(resp.body.error.message).toEqual('Min employees cant be greater than the max');
+    expect(resp.error.status).toEqual(400);
+  });
+
   test("fails: test next() handler", async function () {
     // there's no normal failure event which will cause this route to fail ---
     // thus making it hard to test that the error-handler works with it. This

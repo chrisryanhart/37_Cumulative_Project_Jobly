@@ -1,5 +1,5 @@
 "use strict";
-const { sqlForPartialUpdate } = require("./sql.js");
+const { sqlForPartialUpdate, sqlForFilteredCompanies } = require("./sql.js");
 const {
   NotFoundError,
   BadRequestError,
@@ -43,5 +43,39 @@ describe("Convert input data for update to sql format", function () {
             expect(err.status).toEqual(400);
         }
     });
+});
+
+describe("Convert input data for SQL to filter companies", function () {
+  test("successfully convert data", function () {
+      // good format
+      const twoWordKeys = {minEmployees:"num_employees",maxEmployees:"num_employees"};
+
+      const filterData = {
+          name: "New",
+          numEmployees: 10,
+          maxEmployees: 11
+        }
+
+      const res = sqlForFilteredCompanies(filterData,twoWordKeys);
+     
+      expect(res.setCols).toEqual('LOWER (companies.name) LIKE $1 AND LOWER (companies.name) LIKE $2 AND "num_employees"<=$3');
+      expect(res.values).toEqual(['%New%', 10, 11]);
+  });
+
+  test("error: no data parameter provided", function () {
+    try{
+      const twoWordKeys = {minEmployees:"num_employees",maxEmployees:"num_employees"};
+
+      const filterData = {}
   
+      const res = sqlForFilteredCompanies(filterData,twoWordKeys);
+  
+    }catch(err){
+      expect(err.message).toEqual('No data');
+      expect(err.status).toEqual(400);
+    }
+   
+});
+
+
 });

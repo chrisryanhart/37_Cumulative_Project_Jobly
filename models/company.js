@@ -51,13 +51,13 @@ class Company {
 
   static async findAll(data) {
 
-    if (Object.keys(data).length !== 0){
+    if (data && Object.keys(data).length !== 0){
       // gets filtered companies
   
       const {setCols,values} = sqlForFilteredCompanies(data,{minEmployees:"num_employees",maxEmployees:"num_employees"});
 
       const criteria = "WHERE " + setCols;
-
+      // WHERE LOWER( trees.title ) LIKE  '%elm%'
       const filteredQuery = `SELECT handle,
                                   name,
                                   description,
@@ -70,15 +70,15 @@ class Company {
 
       return companiesRes.rows;
     }
-    const querySql = `UPDATE companies 
-                      SET ${setCols} 
-                      WHERE handle = ${handleVarIdx} 
-                      RETURNING handle, 
-                                name, 
-                                description, 
-                                num_employees AS "numEmployees", 
-                                logo_url AS "logoUrl"`;
-    const result = await db.query(querySql, [...values, handle]);
+    // const querySql = `UPDATE companies 
+    //                   SET ${setCols} 
+    //                   WHERE handle = ${handleVarIdx} 
+    //                   RETURNING handle, 
+    //                             name, 
+    //                             description, 
+    //                             num_employees AS "numEmployees", 
+    //                             logo_url AS "logoUrl"`;
+    // const result = await db.query(querySql, [...values, handle]);
     // gets all companies
 
     const companiesRes = await db.query(
@@ -87,7 +87,6 @@ class Company {
                   description,
                   num_employees AS "numEmployees",
                   logo_url AS "logoUrl"
-           ${data}
            FROM companies
            ORDER BY name`);
     return companiesRes.rows;

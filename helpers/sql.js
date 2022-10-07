@@ -44,9 +44,15 @@ function sqlForFilteredCompanies(dataToUpdate, jsToSql) {
       return `"${jsToSql[colName] || colName}"<=$${idx + 1}`;
 
     }else{
-      return `"${jsToSql[colName] || colName}"=$${idx + 1}`;
+      // update 'dataToUpdate'
+
+      return `LOWER (companies.name) LIKE $${idx + 1}`;
     }
   });
+
+  if(Object.keys(dataToUpdate).includes('name')){
+    dataToUpdate.name = '%' + dataToUpdate.name + '%';
+  }
 
   // parameterized column values their respective values are returned
   return {

@@ -15,7 +15,7 @@
             ]
         },
         "minEmployees": {
-            "type": "string",
+            "type": "integer",
             "default": "",
             "title": "The minEmployees Schema",
             "examples": [
@@ -23,7 +23,7 @@
             ]
         },
         "maxEmployees": {
-            "type": "string",
+            "type": "integer",
             "default": "",
             "title": "The maxEmployees Schema",
             "examples": [
