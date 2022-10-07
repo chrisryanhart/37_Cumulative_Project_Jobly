@@ -49,15 +49,17 @@ class Company {
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    * */
 
+  // Returns all or filtered companies if query 'data' parameter provided
   static async findAll(data) {
 
+    // if data parameter present and a key/value is present, create and return a filtered query
     if (data && Object.keys(data).length !== 0){
-      // gets filtered companies
   
+      // translates query into sql format
       const {setCols,values} = sqlForFilteredCompanies(data,{minEmployees:"num_employees",maxEmployees:"num_employees"});
 
       const criteria = "WHERE " + setCols;
-      // WHERE LOWER( trees.title ) LIKE  '%elm%'
+
       const filteredQuery = `SELECT handle,
                                   name,
                                   description,
@@ -70,16 +72,6 @@ class Company {
 
       return companiesRes.rows;
     }
-    // const querySql = `UPDATE companies 
-    //                   SET ${setCols} 
-    //                   WHERE handle = ${handleVarIdx} 
-    //                   RETURNING handle, 
-    //                             name, 
-    //                             description, 
-    //                             num_employees AS "numEmployees", 
-    //                             logo_url AS "logoUrl"`;
-    // const result = await db.query(querySql, [...values, handle]);
-    // gets all companies
 
     const companiesRes = await db.query(
           `SELECT handle,

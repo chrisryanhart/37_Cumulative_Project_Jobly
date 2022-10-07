@@ -51,18 +51,16 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
  * Authorization required: none
  */
 
-// name like - find syntax
-
-// SELECT * FROM trees WHERE LOWER( trees.title ) LIKE  '%elm%'
-
-// case insensitive - convert to lowercase
+// Route gets companies by filtering for name, minEmployees, and maxEmployees
+// 
 
 router.get("/", async function (req, res, next) {
   try {
 
-    // consolidate request data into an object
+    // create object to gather req.query and req.body data
     const filterCriteria = {};
 
+    // Add relevant query information if present
     if(Object.keys(req.query).includes('name')){
       filterCriteria["name"] = req.query.name.toLowerCase();
     }
@@ -72,20 +70,20 @@ router.get("/", async function (req, res, next) {
       }
     }
 
+    // valid json format of object to be sent to the database
     const validator = jsonschema.validate(filterCriteria, companyQuerySchema);
     if (!validator.valid) {
       const errs = validator.errors.map(e => e.stack);
       throw new BadRequestError(errs);
     }
 
-    // If min greater than max employees, throw error
+    // If min greater than max employees in query, throw error
     if (filterCriteria.minEmployees > filterCriteria.maxEmployees){
       const err = new BadRequestError('Min employees cant be greater than the max');
       return next(err);
     }
 
-    // const filterCriteria = Object.keys(req.query).length !== 0 ? req.query : ' ';
-
+    // query database based on filter criteria
     const companies = await Company.findAll(filterCriteria);
     return res.json({ companies });
   } catch (err) {

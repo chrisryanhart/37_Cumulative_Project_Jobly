@@ -10,7 +10,6 @@ const {
 
 describe("Convert input data for update to sql format", function () {
     test("successfully convert data", function () {
-        // good format
         const twoWordKeys =        {
             numEmployees: "num_employees",
             logoUrl: "logo_url",
@@ -45,9 +44,9 @@ describe("Convert input data for update to sql format", function () {
     });
 });
 
+// Tests translating filtered company query sql format
 describe("Convert input data for SQL to filter companies", function () {
   test("successfully convert data", function () {
-      // good format
       const twoWordKeys = {minEmployees:"num_employees",maxEmployees:"num_employees"};
 
       const filterData = {

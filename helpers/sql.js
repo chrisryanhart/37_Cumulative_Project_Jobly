@@ -29,13 +29,13 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
   };
 }
 
+// Returns sql format for a dynamic filtered company query
 function sqlForFilteredCompanies(dataToUpdate, jsToSql) {
   // extracts keys from columns where a change is needed
   const keys = Object.keys(dataToUpdate);
   console.log(`key length = ${keys}`);
   if (keys.length === 0) throw new BadRequestError("No data");
 
-  // {firstName: 'Aliya', age: 32} => ['"first_name"=$1', '"age"=$2']
   const cols = keys.map((colName, idx) => {
       if(colName === 'minEmployees') {
         return `"${jsToSql[colName] || colName}">=$${idx + 1}`;
@@ -44,12 +44,11 @@ function sqlForFilteredCompanies(dataToUpdate, jsToSql) {
       return `"${jsToSql[colName] || colName}"<=$${idx + 1}`;
 
     }else{
-      // update 'dataToUpdate'
-
       return `LOWER (companies.name) LIKE $${idx + 1}`;
     }
   });
 
+  // Updates 'dataToUpdate' object for sql 'LIKE' query
   if(Object.keys(dataToUpdate).includes('name')){
     dataToUpdate.name = '%' + dataToUpdate.name + '%';
   }
