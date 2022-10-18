@@ -53,6 +53,8 @@ function ensureAdmin(req,res,next){
   }
 }
 
+
+
 // 
 function ensureAdminOrCurrentUser(req,res,next){
   try{
