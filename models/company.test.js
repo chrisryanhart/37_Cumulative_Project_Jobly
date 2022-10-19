@@ -151,7 +151,7 @@ describe("get", function () {
     });
   });
 
-  test("not found if no such company", async function () {
+  test("not found if no such job", async function () {
     try {
       await Company.get("nope");
       fail();

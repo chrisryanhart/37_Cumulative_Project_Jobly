@@ -84,6 +84,16 @@ describe("get", function () {
     expect(job).toEqual({id:id,title:'Fullstack Dev',salary:30000,equity:'0',companyHandle:'c1'});
   });
 
+  test("not found if no such job", async function () {
+    try {
+      await Job.get(0);
+      throw new ExpressError('Test should not reach this point');
+
+    } catch (err) {
+      expect(err instanceof NotFoundError).toBeTruthy();
+    }
+  });
+
 });
 
 describe("update", function () {
@@ -112,6 +122,88 @@ describe("update", function () {
            FROM jobs
            WHERE id = ${id}`);
     expect(result.rows[0]).toEqual({id:id,title:'Updated',salary:1,equity:'0.02',company_handle:'c1'});
+  });
+
+  test("works: null fields", async function () {
+    const updateDataSetNulls = {
+      title: "New",
+      salary: 5,
+      equity: null
+    };
+
+    let idRes = await db.query(
+      `SELECT id
+       FROM jobs
+       LIMIT 1`);
+    let id = idRes.rows[0].id;
+
+    let job = await Job.update(id, updateDataSetNulls);
+    expect(job).toEqual(expect.objectContaining({
+      id: id,
+      ...updateDataSetNulls
+    }));
+
+    const result = await db.query(
+          `SELECT id, title, salary, equity, company_handle
+           FROM jobs
+           WHERE id = ${id}`);
+    expect(result.rows).toEqual([{
+      id: id,
+      title: "New",
+      salary: 5,
+      equity: null,
+      company_handle:"c1"
+    }]);
+  });
+
+  test("cannot modify id or companyHandle", async function () {
+    const badDataUpdate = {
+      id: 1,
+      title: "New",
+      salary: 5,
+      equity: null,
+      companyHandle: "c2"
+    };
+
+    let idRes = await db.query(
+      `SELECT id
+       FROM jobs
+       LIMIT 1`);
+    let id = idRes.rows[0].id;
+    
+    try {
+      let job = await Job.update(id, badDataUpdate);
+      throw new ExpressError('Test should not reach this point');
+    } catch(err){
+      expect(err instanceof BadRequestError).toBeTruthy();
+    }
+
+  });
+
+  test("not found if no such company", async function () {
+    try {
+      await Job.update(0, updateData);
+      throw new ExpressError('Test should not reach this point');
+
+    } catch (err) {
+      expect(err instanceof NotFoundError).toBeTruthy();
+    }
+  });
+
+  test("bad request with no data", async function () {
+    try {
+      let idRes = await db.query(
+        `SELECT id
+         FROM jobs
+         LIMIT 1`);
+      let id = idRes.rows[0].id;
+
+      await Job.update(id, {});
+      throw new ExpressError('Test should not reach this point');
+
+    } catch (err) {
+      expect(err instanceof BadRequestError).toBeTruthy();
+    }
   });
 });
 

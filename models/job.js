@@ -109,6 +109,8 @@ class Job {
   
     static async update(id, data) {
       const { setCols, values } = sqlForPartialUpdate(data,{});
+      if (setCols.includes('id') || setCols.includes('companyHandle')) throw new BadRequestError('Cannot modify id or companyHandle!');
+
       const idVarIdx = "$" + (values.length + 1);
   
       const querySql = `UPDATE jobs 
