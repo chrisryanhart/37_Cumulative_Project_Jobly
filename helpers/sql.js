@@ -60,4 +60,5 @@ function sqlForFilteredCompanies(dataToUpdate, jsToSql) {
   };
 }
 
+
 module.exports = { sqlForPartialUpdate, sqlForFilteredCompanies };
