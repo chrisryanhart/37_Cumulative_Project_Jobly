@@ -13,6 +13,7 @@ const {
   commonAfterEach,
   commonAfterAll,
 } = require("./_testCommon");
+const Job = require("./job");
 
 beforeAll(commonBeforeAll);
 beforeEach(commonBeforeEach);
@@ -133,13 +134,15 @@ describe("findAll", function () {
 
 describe("get", function () {
   test("works", async function () {
-    let user = await User.get("u1");
+
+    let user = await User.get("u2");
     expect(user).toEqual({
-      username: "u1",
-      firstName: "U1F",
-      lastName: "U1L",
-      email: "u1@email.com",
+      username: "u2",
+      firstName: "U2F",
+      lastName: "U2L",
+      email: "u2@email.com",
       isAdmin: false,
+      jobs:[1,2]
     });
   });
 
@@ -225,6 +228,44 @@ describe("remove", function () {
       fail();
     } catch (err) {
       expect(err instanceof NotFoundError).toBeTruthy();
+    }
+  });
+});
+
+// ************ User job application ********
+
+describe("apply", function () {
+
+  test("works", async function () {
+    const idRes = await db.query(`
+    SELECT id 
+    FROM jobs
+    LIMIT 1`);
+    const id = idRes.rows[0].id;
+
+    const data = {username:'u1',job_id:id}
+
+    const applicationRes = await User.apply(data);
+
+    expect(applicationRes.rows[0]).toEqual({username: 'u1', job_id: id});
+  });
+
+  test("bad request with duplicate data", async function () {
+    try {
+      const idRes = await db.query(`
+      SELECT id 
+      FROM jobs
+      LIMIT 1`);
+      const id = idRes.rows[0].id;
+  
+      const data = {username:'u1',job_id:id}
+  
+      await User.apply(data);
+      await User.apply(data);
+
+      throw new BadRequestError('User already applied for this job!')
+    } catch (err) {
+      expect(err instanceof BadRequestError).toBeTruthy();
     }
   });
 });

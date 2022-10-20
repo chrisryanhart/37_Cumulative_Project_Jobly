@@ -14,6 +14,7 @@ const {
   u1Token,
   u2AdminToken
 } = require("./_testCommon");
+const { BadRequestError } = require("../expressError.js");
 
 beforeAll(commonBeforeAll);
 beforeEach(commonBeforeEach);
@@ -201,6 +202,7 @@ describe("GET /users/:username", function () {
         lastName: "U1L",
         email: "user1@user.com",
         isAdmin: false,
+        jobs: []
       },
     });
   });
@@ -350,3 +352,122 @@ describe("DELETE /users/:username", function () {
   });
 
 });
+
+// *********************** POST new job application
+
+
+describe("POST /users", function () {
+  test("works for admins", async function () {
+    let idRes = await db.query(
+      `SELECT id
+       FROM jobs
+       LIMIT 1`);
+    let id = idRes.rows[0].id;
+
+    const resp = await request(app)
+        .post(`/users/u2/jobs/${id}`)
+        .set("authorization", `Bearer ${u2AdminToken}`);
+    expect(resp.statusCode).toEqual(200);
+    expect(resp.body).toEqual({applied:id});
+    });
+
+    test("bad request cant apply 2X", async function () {
+      try{
+        let idRes = await db.query(
+          `SELECT id
+           FROM jobs
+           LIMIT 1`);
+        let id = idRes.rows[0].id;
+    
+        await request(app)
+        .post(`/users/u2/jobs/${id}`)
+        .set("authorization", `Bearer ${u2AdminToken}`);
+  
+        const resp = await request(app)
+            .post(`/users/u2/jobs/${id}`)
+            .set("authorization", `Bearer ${u2AdminToken}`);
+      } catch (err) {
+        expect(err instanceof BadRequestError).toBeTruthy();
+      }
+    });
+
+  },1000000);
+
+  // test("works for users: create admin", async function () {
+  //   const resp = await request(app)
+  //       .post("/users")
+  //       .send({
+  //         username: "u-new",
+  //         firstName: "First-new",
+  //         lastName: "Last-newL",
+  //         password: "password-new",
+  //         email: "new@email.com",
+  //         isAdmin: true,
+  //       })
+  //       .set("authorization", `Bearer ${u2AdminToken}`);
+  //   expect(resp.statusCode).toEqual(201);
+  //   expect(resp.body).toEqual({
+  //     user: {
+  //       username: "u-new",
+  //       firstName: "First-new",
+  //       lastName: "Last-newL",
+  //       email: "new@email.com",
+  //       isAdmin: true,
+  //     }, token: expect.any(String),
+  //   });
+  // });
+
+  // test("unauth for anon", async function () {
+  //   const resp = await request(app)
+  //       .post("/users")
+  //       .send({
+  //         username: "u-new",
+  //         firstName: "First-new",
+  //         lastName: "Last-newL",
+  //         password: "password-new",
+  //         email: "new@email.com",
+  //         isAdmin: true,
+  //       });
+  //   expect(resp.statusCode).toEqual(401);
+  // });
+
+  // test("bad request if missing data", async function () {
+  //   const resp = await request(app)
+  //       .post("/users")
+  //       .send({
+  //         username: "u-new",
+  //       })
+  //       .set("authorization", `Bearer ${u2AdminToken}`);
+  //   expect(resp.statusCode).toEqual(400);
+  // });
+
+  // test("bad request if invalid data", async function () {
+  //   const resp = await request(app)
+  //       .post("/users")
+  //       .send({
+  //         username: "u-new",
+  //         firstName: "First-new",
+  //         lastName: "Last-newL",
+  //         password: "password-new",
+  //         email: "not-an-email",
+  //         isAdmin: true,
+  //       })
+  //       .set("authorization", `Bearer ${u2AdminToken}`);
+  //   expect(resp.statusCode).toEqual(400);
+  // });
+
+  // test("Unauthorized access if not admin", async function () {
+  //   const resp = await request(app)
+  //       .post("/users")
+  //       .send({
+  //         username: "u-new",
+  //         firstName: "First-new",
+  //         lastName: "Last-newL",
+  //         password: "password-new",
+  //         email: "new@email.com",
+  //         isAdmin: false,
+  //       })
+  //       .set("authorization", `Bearer ${u1Token}`);
+  //       expect(resp.statusCode).toEqual(401);
+  //       expect(resp.body.error.message).toEqual('Must be Admin to access!');
+  // });

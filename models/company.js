@@ -98,16 +98,44 @@ class Company {
                   name,
                   description,
                   num_employees AS "numEmployees",
-                  logo_url AS "logoUrl"
-           FROM companies
+                  logo_url AS "logoUrl",
+                  jobs.id,
+                  jobs.title,
+                  jobs.salary,
+                  jobs.equity
+           FROM companies 
+           LEFT JOIN jobs
+            ON companies.handle = jobs.company_handle
            WHERE handle = $1`,
         [handle]);
 
     const company = companyRes.rows[0];
 
     if (!company) throw new NotFoundError(`No company: ${handle}`);
+    
+    let {name,description,numEmployees,logoUrl} = companyRes.rows[0];
+    
+    // let jobs;
+    // if (companyRes.rows.length >1 || ){
+    let jobs = companyRes.rows.map(r=> {
+      if(r.id !== null){
+        
+          return {
+              id: r.id, 
+              title: r.title,
+              salary: r.salary,
+              equity: r.equity
+            };
+      }
+    });
 
-    return company;
+    // return empty array if no jobs found in results
+    if(jobs[0]===undefined){
+      jobs.length = 0;
+      console.log('test');
+    }
+
+    return {handle,name,description,numEmployees,logoUrl, jobs};
   }
 
   /** Update company data with `data`.

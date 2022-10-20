@@ -138,23 +138,28 @@ describe("findAll", function () {
 });
 
 /************************************** get */
-
+// Tests were modified to account for jobs being added to the returned object
 describe("get", function () {
   test("works", async function () {
     let company = await Company.get("c1");
-    expect(company).toEqual({
+    expect(company).toEqual(expect.objectContaining({
       handle: "c1",
       name: "C1",
       description: "Desc1",
       numEmployees: 1,
-      logoUrl: "http://c1.img",
-    });
+      logoUrl: "http://c1.img"
+    }));
+    expect(company.jobs[0]).toEqual(expect.objectContaining({
+      title: "Fullstack Dev",
+      salary: 30000,
+      equity: "0",
+    }));
   });
 
-  test("not found if no such job", async function () {
+  test("not found if no such company exists", async function () {
     try {
       await Company.get("nope");
-      fail();
+      throw new ExpressError('Test should not reach this point');
     } catch (err) {
       expect(err instanceof NotFoundError).toBeTruthy();
     }
