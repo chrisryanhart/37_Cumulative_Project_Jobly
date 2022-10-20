@@ -12,6 +12,7 @@ const Job = require("../models/job");
 // replace with job schemas
 const jobNewSchema = require("../schemas/jobNew.json");
 const jobUpdateSchema = require("../schemas/jobUpdate.json");
+const jobQuerySchema = require("../schemas/jobQuery.json");
 
 
 const router = new express.Router();
@@ -61,30 +62,23 @@ router.post("/", [ensureLoggedIn, ensureAdmin], async function (req, res, next) 
       const filterCriteria = {};
   
       // Filtering to update: Add relevant query information if present
-    //   if(Object.keys(req.query).includes('name')){
-    //     filterCriteria["name"] = req.query.name.toLowerCase();
-    //   }
-    //   if(Object.keys(req.body).length!==0){
-    //     for(const key in req.body){
-    //       filterCriteria[key] = req.body[key];
-    //     }
-    //   }
+      if(Object.keys(req.query).includes('title')){
+        filterCriteria["title"] = req.query.title.toLowerCase();
+      }
+      if(Object.keys(req.body).length!==0){
+        for(const key in req.body){
+          filterCriteria[key] = req.body[key];
+        }
+      }
   
     // Filtering to update:
       // valid json format of object to be sent to the database
-    //   const validator = jsonschema.validate(filterCriteria, companyQuerySchema);
-    //   if (!validator.valid) {
-    //     const errs = validator.errors.map(e => e.stack);
-    //     throw new BadRequestError(errs);
-    //   }
-  
-    //   Filtering to update:
-      // If min greater than max employees in query, throw error
-    //   if (filterCriteria.minEmployees > filterCriteria.maxEmployees){
-    //     const err = new BadRequestError('Min employees cant be greater than the max');
-    //     return next(err);
-    //   }
-  
+      const validator = jsonschema.validate(filterCriteria, jobQuerySchema);
+      if (!validator.valid) {
+        const errs = validator.errors.map(e => e.stack);
+        throw new BadRequestError(errs);
+      }
+    
       // query database based on filter criteria
       const jobs = await Job.findAll(filterCriteria);
       return res.json({ jobs });

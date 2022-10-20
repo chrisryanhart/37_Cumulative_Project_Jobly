@@ -2,7 +2,7 @@
 
 const db = require("../db");
 const { BadRequestError, NotFoundError } = require("../expressError");
-const { sqlForPartialUpdate, sqlForFilteredCompanies } = require("../helpers/sql");
+const { sqlForPartialUpdate, sqlForFilteredCompanies, sqlForFilteredJobs } = require("../helpers/sql");
 
 class Job {
     /** Create a job (from data), update db, return new job data.
@@ -46,25 +46,25 @@ class Job {
       // update filtering for jobs
   
       // if data parameter present and a key/value is present, create and return a filtered query
-      // if (data && Object.keys(data).length !== 0){
+      if (data && Object.keys(data).length !== 0){
     
       //   // translates query into sql format
-      //   const {setCols,values} = sqlForFilteredCompanies(data,{minEmployees:"num_employees",maxEmployees:"num_employees"});
+        const {setCols,values} = sqlForFilteredJobs(data,{minSalary:"salary",hasEquity:"equity"});
   
-      //   const criteria = "WHERE " + setCols;
+        const criteria = "WHERE " + setCols;
   
-      //   const filteredQuery = `SELECT handle,
-      //                               name,
-      //                               description,
-      //                               num_employees AS "numEmployees",
-      //                               logo_url AS "logoUrl"
-      //                           FROM companies
-      //                           ${criteria}
-      //                           ORDER BY name`;
-      //   const companiesRes = await db.query(filteredQuery,values);
+        const filteredQuery = `SELECT id,
+                                    title,
+                                    salary,
+                                    equity,
+                                    company_handle AS "companyHandle"
+                                FROM jobs
+                                ${criteria}
+                                ORDER BY id`;
+        const jobsRes = await db.query(filteredQuery,values);
   
-      //   return companiesRes.rows;
-      // }
+        return jobsRes.rows;
+      }
   
       const jobsRes = await db.query(
             `SELECT id, title, salary, equity, company_handle AS "companyHandle"

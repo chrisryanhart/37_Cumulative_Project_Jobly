@@ -60,5 +60,42 @@ function sqlForFilteredCompanies(dataToUpdate, jsToSql) {
   };
 }
 
+function sqlForFilteredJobs(dataToUpdate, jsToSql) {
+  // extracts keys from columns where a change is needed
+  const keys = Object.keys(dataToUpdate);
+  console.log(`key length = ${keys}`);
+  if (keys.length === 0) throw new BadRequestError("No data");
 
-module.exports = { sqlForPartialUpdate, sqlForFilteredCompanies };
+  const cols = keys.map((colName, idx) => {
+      if(colName === 'minSalary') {
+        return `"${jsToSql[colName] || colName}">=$${idx + 1}`;
+
+    }else if (colName === 'hasEquity' && dataToUpdate.hasEquity === true){
+      return `"${jsToSql[colName] || colName}">$${idx + 1}`;
+
+    }else if (colName === 'hasEquity' && dataToUpdate.hasEquity === false){
+      return `("${jsToSql[colName] || colName}"=$${idx + 1} OR "${jsToSql[colName] || colName}" IS NULL)`;
+    }else{
+      return `LOWER (jobs.title) LIKE $${idx + 1}`;
+    }
+  });
+
+  // Updates 'dataToUpdate' object for sql 'LIKE' query
+  if(Object.keys(dataToUpdate).includes('title')){
+    dataToUpdate.title = '%' + dataToUpdate.title + '%';
+  }
+
+  // Updates equity value to be greater than 0
+  if(Object.keys(dataToUpdate).includes('hasEquity')){
+    dataToUpdate.hasEquity = 0;
+  }
+
+  // parameterized column values their respective values are returned
+  return {
+    setCols: cols.join(" AND "),
+    values: Object.values(dataToUpdate),
+  };
+}
+
+
+module.exports = { sqlForPartialUpdate, sqlForFilteredCompanies, sqlForFilteredJobs };
