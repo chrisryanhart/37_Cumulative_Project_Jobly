@@ -52,6 +52,39 @@ describe("GET /jobs", function () {
             );
     });
 
+    test("filter works by query string and req.body", async function () {
+      const resp = await request(app).get("/jobs?title=TEST+JOB+1").send({"minSalary":20000});
+      expect(resp.body.jobs[0]).toEqual(expect.objectContaining({
+        title: 'test job 1',
+        salary: 50000,
+        equity: "0.5",
+        companyHandle: "c1"
+      }));
+    });
+
+    test("filter by 'hasEquity' works", async function () {
+      const resp = await request(app).get("/jobs").send({"hasEquity":true});
+      expect(resp.body.jobs[0]).toEqual(expect.objectContaining({
+        title: 'test job 1',
+        salary: 50000,
+        equity: "0.5",
+        companyHandle: "c1"
+      }));
+      expect(resp.body.jobs[1]).toEqual(expect.objectContaining({
+        title: "test job 2",
+        salary: null,
+        equity: "0.25",
+        companyHandle: "c2"
+      }));
+    });
+  
+    test("error is string passed into minSalary", async function () {
+      const resp = await request(app).get("/jobs").send({"minSalary":"a"});
+      expect(resp.body.error.message[0]).toEqual('instance.minSalary is not of a type(s) integer');
+      expect(resp.error.status).toEqual(400);
+    });
+  
+
     test("fails: test next() handler", async function () {
       // there's no normal failure event which will cause this route to fail ---
       // thus making it hard to test that the error-handler works with it. This
