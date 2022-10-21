@@ -1,5 +1,5 @@
 "use strict";
-const { sqlForPartialUpdate, sqlForFilteredCompanies } = require("./sql.js");
+const { sqlForPartialUpdate, sqlForFilteredCompanies, sqlForFilteredJobs } = require("./sql.js");
 const {
   NotFoundError,
   BadRequestError,
@@ -75,6 +75,41 @@ describe("Convert input data for SQL to filter companies", function () {
     }
    
 });
+
+
+});
+
+
+describe("Convert input data for SQL to filter jobs", function () {
+  test("successfully convert data", function () {
+      const colNameTranslation = {minSalary:"salary",hasEquity:"equity"};
+
+      const filterData = {
+          title: "New",
+          minSalary: 30000,
+          hasEquity: true
+        }
+
+      const res = sqlForFilteredJobs(filterData,colNameTranslation);
+     
+      expect(res.setCols).toEqual('LOWER (jobs.title) LIKE $1 AND "salary">=$2 AND "equity">$3');
+      expect(res.values).toEqual(['%New%', 30000, 0]);
+  });
+
+  test("error: no data parameter provided", function () {
+    try{
+      const twoWordKeys = {minSalary:"salary",hasEquity:"equity"};
+
+      const filterData = {}
+  
+      const res = sqlForFilteredJobs(filterData,twoWordKeys);
+  
+    }catch(err){
+      expect(err.message).toEqual('No data');
+      expect(err.status).toEqual(400);
+    }
+   
+  });
 
 
 });

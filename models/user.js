@@ -118,9 +118,11 @@ class User {
   /** Given a username, return data about user.
    *
    * Returns { username, first_name, last_name, is_admin, jobs }
-   *   where jobs is { id, title, company_handle, company_name, state }
+   *   where jobs is applied jobs [ job_id ]
    *
    * Throws NotFoundError if user not found.
+   * 
+   * All of a users applied jobs are returned 
    **/
 
   static async get(username) {
@@ -215,6 +217,8 @@ class User {
   }
 
   // ************** apply for a job **************
+
+  // Allows user to apply for any jobs 
 
   static async apply(data){
 

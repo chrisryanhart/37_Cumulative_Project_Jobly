@@ -55,7 +55,7 @@ class Company {
     // if data parameter present and a key/value is present, create and return a filtered query
     if (data && Object.keys(data).length !== 0){
   
-      // translates query into sql format
+      // translates query into a column/value sql format
       const {setCols,values} = sqlForFilteredCompanies(data,{minEmployees:"num_employees",maxEmployees:"num_employees"});
 
       const criteria = "WHERE " + setCols;
@@ -73,6 +73,7 @@ class Company {
       return companiesRes.rows;
     }
 
+    // if no query data was provided, query all companies
     const companiesRes = await db.query(
           `SELECT handle,
                   name,
@@ -93,6 +94,8 @@ class Company {
    **/
 
   static async get(handle) {
+
+    // retrieve company info and all its posted jobs
     const companyRes = await db.query(
           `SELECT handle,
                   name,
@@ -115,11 +118,9 @@ class Company {
     
     let {name,description,numEmployees,logoUrl} = companyRes.rows[0];
     
-    // let jobs;
-    // if (companyRes.rows.length >1 || ){
+    // if the company has jobs, extract all information
     let jobs = companyRes.rows.map(r=> {
       if(r.id !== null){
-        
           return {
               id: r.id, 
               title: r.title,
@@ -129,7 +130,7 @@ class Company {
       }
     });
 
-    // return empty array if no jobs found in results
+    // return empty jobs array for the company if no jobs found
     if(jobs[0]===undefined){
       jobs.length = 0;
       console.log('test');

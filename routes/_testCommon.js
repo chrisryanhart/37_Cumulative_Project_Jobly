@@ -62,27 +62,22 @@ async function commonBeforeAll() {
     isAdmin: false,
   });
 
-  await Job.create(
-    {
-      title: "test job 1",
-      salary: 50000,
-      equity: 0.5,
-      companyHandle: "c1"
-  });
-  await Job.create(
-    {
-      title: "test job 2",
-      salary: null,
-      equity: 0.25,
-      companyHandle: "c2"
-  });
-  await Job.create(
-    {
-      title: "test job 3",
-      salary: 25000,
-      equity: null,
-      companyHandle: "c2"
-  });
+  // Changed job creation method in order to manually assign ids
+  // Previous method was to use Job.create()
+  await db.query(
+    `INSERT INTO jobs
+    (id,title,salary,equity,company_handle)
+    VALUES (1,'test job 1',50000,0.5,'c1'),
+           (2,'test job 2',null,0.25,'c2'),
+           (3,'test job 3',25000,null,'c2')
+    RETURNING id, title,salary,equity,company_handle`);
+
+  await db.query(
+    `INSERT INTO applications (username,job_id)
+     VALUES ('u1',1),
+            ('u1',2)`
+  );
+
 }
 
 async function commonBeforeEach() {

@@ -11,11 +11,11 @@ class Job {
      *
      * Returns { id,title,salary,equity,company_handle }
      *
-     * Throws BadRequestError if company already in database.
+     * Throws BadRequestError if job already in database.
      * */
   
     static async create({ title,salary,equity,companyHandle }) {
-        // irrelevant? just make a call or come back to this later
+
       const duplicateCheck = await db.query(
             `SELECT id
              FROM jobs
@@ -43,12 +43,11 @@ class Job {
   
     // Returns all or filtered jobs if query 'data' parameter provided
     static async findAll(data) {
-      // update filtering for jobs
   
       // if data parameter present and a key/value is present, create and return a filtered query
       if (data && Object.keys(data).length !== 0){
     
-      //   // translates query into sql format
+      // translates query into sql format
         const {setCols,values} = sqlForFilteredJobs(data,{minSalary:"salary",hasEquity:"equity"});
   
         const criteria = "WHERE " + setCols;

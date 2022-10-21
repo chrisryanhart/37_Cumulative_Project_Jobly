@@ -22,7 +22,7 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
       `"${jsToSql[colName] || colName}"=$${idx + 1}`,
   );
 
-  // parameterized column values their respective values are returned
+  // parameterized column values and their respective values are returned
   return {
     setCols: cols.join(", "),
     values: Object.values(dataToUpdate),
@@ -60,6 +60,7 @@ function sqlForFilteredCompanies(dataToUpdate, jsToSql) {
   };
 }
 
+// Returns sql format for a dynamically filtered jobs query
 function sqlForFilteredJobs(dataToUpdate, jsToSql) {
   // extracts keys from columns where a change is needed
   const keys = Object.keys(dataToUpdate);

@@ -43,7 +43,7 @@ function ensureLoggedIn(req, res, next) {
   }
 }
 
-// ensure user is an admin
+// verifies admin access was granted.  Otherwise, error is returned.
 function ensureAdmin(req,res,next){
   try{
     if(res.locals.user.isAdmin === false) throw new UnauthorizedError('Must be Admin to access!');
@@ -55,7 +55,7 @@ function ensureAdmin(req,res,next){
 
 
 
-// 
+// Verifies the user is either an admin or the current, logged in user.
 function ensureAdminOrCurrentUser(req,res,next){
   try{
     if(req.params.username !== res.locals.user.username && res.locals.user.isAdmin === false) throw new UnauthorizedError('Must be current user or admin to access!');
